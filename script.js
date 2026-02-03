@@ -11,6 +11,8 @@ const inputElevation = document.querySelector('.form__input--elevation');
 class Workout {
   date = new Date();
   id = (Date.now() + '').slice(-10);
+  clicks = 0;
+
   constructor(coords, distance, duration) {
     this.coords = coords;
     this.distance = distance;
@@ -23,6 +25,10 @@ class Workout {
 
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on 
       ${months[this.date.getMonth()]} ${this.date.getDate()}`;
+  }
+
+  click() {
+    this.clicks++;
   }
 }
 
@@ -67,6 +73,8 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
 
     inputType.addEventListener('change', this._toggleElevationField);
+
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -231,7 +239,25 @@ class App {
 
     form.insertAdjacentHTML('afterend', html);
   }
+
+  _moveToPopup(e) {
+    const workout = e.target.closest('.workout');
+    if (!workout) return;
+
+    const id = workout.dataset.id;
+    const workoutObj = this.#workouts.find(w => w.id === id);
+
+    this.#map.setView(workoutObj.coords, 15, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+
+    workoutObj.click();
+
+    console.log(workoutObj);
+  }
 }
 
 const app = new App();
-app._getPosition();
